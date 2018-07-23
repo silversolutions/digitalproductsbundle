@@ -1,0 +1,62 @@
+{% set mainImage = null %}
+{% set productId = null %}
+{% set imageListWithoutMain = null %}
+
+<div class="row js-variant-content-wrapper">
+    <div class="medium-12 large-6 columns print-product-detail__img">
+
+        {# TODO: how to handle video link #}
+        {% if ses_render_field(catalogElement, 'video') %}
+            <a class="video_link" href="{{ ses_render_field(catalogElement, 'video') }}">
+                <span class="sprite sprite-032b-video-30 trans"></span>
+            </a>
+        {% endif %}
+
+        <figure class="text-center u-no-margin u-padding-1x u-border">
+            {% set mainImage = '' %}
+            {% set productId = '' %}
+            {% if orderableVariantProduct|default is not empty %}
+                {% set productId = catalogElement.sku ~ orderableVariantProduct.variantCode %}
+                {% set mainImage = ses_assets_main_image(orderableVariantProduct, productId)  %}
+            {% endif %}
+            {% if mainImage is empty %}
+                {% set mainImage = ses_assets_main_image(catalogElement)  %}
+            {% endif %}
+            <a href="/{{ st_imageconverter(mainImage, 'image_zoom') }}">
+                <img src="/{{ st_imageconverter(mainImage, 'thumb_big') }}"
+                     alt="{% if mainImage.alternativeText is defined and mainImage.alternativeText is not empty %}{{ mainImage.alternativeText }}{% else %}{{ 'label.image_not_available'|st_translate }}{% endif %}"
+                     title="{% if mainImage.alternativeText is defined and mainImage.alternativeText is not empty %}{{ mainImage.alternativeText }}{% else %}{{ 'label.image_not_available'|st_translate }}{% endif %}"
+                     class="cloudzoom" id="zoom_1" data-cloudzoom="zoomSizeMode: 'image', autoInside: 640"
+                />
+            </a>
+            <figcaption class="text-left u-ellipsis">{{ catalogElement.name }}</figcaption>
+        </figure>
+
+                  <div class="u-margin-top-1x js-slick-init" data-slick='{"slidesToShow": 4, "slidesToScroll": 4}'>
+                      {% set mainImages = [mainImage] %}
+                      {% if orderableVariantProduct|default is not empty %}
+                          {% set productId = catalogElement.sku ~ orderableVariantProduct.variantCode %}
+                          {% set imageListWithoutMain = ses_assets_image_list(orderableVariantProduct, productId) %}
+                      {% endif %}
+
+                      {% if imageListWithoutMain is empty %}
+                          {% set imageListWithoutMain = ses_assets_image_list(catalogElement, productId) %}
+                      {% endif %}
+
+                      {% set imageList = mainImages|merge(imageListWithoutMain) %}
+                      {% if imageList|length > 0 %}
+                          {% for item in imageList %}
+                              <a href="#" class="cloudzoom-gallery" data-cloudzoom="useZoom: '#zoom_1', image: '/{{ st_imageconverter(item, 'thumb_big') }}', zoomImage: '/{{ st_imageconverter(item, 'image_zoom') }}'">
+                                  <img src="/{{ st_imageconverter(item, 'thumb_smaller') }}"
+                                       alt="{% if item.alternativeText is defined and item.alternativeText is not empty %}{{ item.alternativeText }}{% else %}{{ 'label.image_not_available'|st_translate }}{% endif %}"
+                                  />
+                              </a>
+                          {% endfor %}
+                      {% endif %}
+                  </div>
+            </div>
+    <div class="medium-12 large-6 columns print-product-detail__data">
+        {{ include('@DigitProductsBundle:Catalog:parts/productData.html.twig'|st_resolve_template) }}
+        {% block product_variant %}{% endblock %}
+    </div>
+</div>

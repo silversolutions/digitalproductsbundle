@@ -1,0 +1,169 @@
+{% extends "SilversolutionsEshopBundle::pagelayout.html.twig"|st_resolve_template %}
+
+{% use "@DigitProductsBundle/Resources/views/blocks/basket.html.twig" %}
+
+{% import "SilversolutionsEshopBundle:Components:tracker_macros.html.twig"|st_resolve_template as tracker %}
+{% set tracking_codes = ses_track_basket(basket, 'view') %}
+{% block tracker_top %}
+  {{ tracker.top(tracking_codes) }}
+{% endblock %}
+
+{% set is_full_view = true %}
+
+{# TODO: We assume that there are some variants in the basket #}
+{% block main_css_class %}js-is-variant{% endblock %}
+
+{#{% block header_content %}#}
+  {#{{ parent() }}#}
+  {#{% block header_login %}{% endblock %}#}
+{#{% endblock %}#}
+
+{#{% block header_meta_nav %}{% endblock %}#}
+{#{% block header_feature_nav %}#}
+  {#<div class="medium-12 columns">#}
+    {#<a href="{{ '/'|st_siteaccess_path }}" class="button secondary tiny small right">#}
+      {#{{ 'Continue shopping'|st_translate }}#}
+    {#</a>#}
+  {#</div>#}
+{#{% endblock %}#}
+{#{% block search %}{% endblock %}#}
+{#{% block basket_preview %}{% endblock %}#}
+{#{% block main_nav %}{% endblock %}#}
+
+{% block content %}
+  <div class="row">
+    <div class="columns">
+      {% if basket|default is not empty and basket.lines.count > 0 %}
+        <h1 class="u-margin-top-4x">{{ 'Your Basket'|st_translate }}</h1>
+
+        {% block messages %}
+          {{ include('SilversolutionsEshopBundle:Basket:messages.html.twig'|st_resolve_template) }}
+        {% endblock %}
+
+        {% block top_html %}
+          <div class="">
+            {% if topHtml|default is not empty and topHtml is iterable %}
+              {% for html in topHtml %}
+                {{ html|raw }}
+              {% endfor %}
+            {% endif %}
+          </div>
+        {% endblock %}
+        <h3 class="header">
+          {% transchoice basket.lines.count with {'%count%': basket.lines.count} %}
+            {1}%count% item in your basket|%count% items in your basket
+          {% endtranschoice %}</h3>
+        <form action="{{ path('silversolutions_basket_update') }}" method="post">
+          <input type="hidden" class="js-redirect-url" value="" name="redirect_url"/>
+          <div class="c-basket__header show-for-large-up">
+           <div class="row">
+              {{ block('basket_part_header') }}
+            </div>
+          </div>
+
+          {{ block('basket_part_lines') }}
+
+          {% if stored_baskets_active|default is not empty and  stored_baskets_active %}
+            {#add to stored basket#}
+            <a href="#" class="button small js-add-to-stored-basket u-margin-bottom-1x u-full-width-on-small">
+              <i class="fa fa-upload fa-fw"></i>
+              {{ 'Add products to stored basket'|st_translate }}</a>
+          {% endif %}
+
+        </form>
+
+        {% block basket_footer %}
+          <hr class="u-no-margin-top"/>
+          <div class="row">
+            {% block vouchers %}
+              {# voucher #}
+              {% if voucher_active %}
+                <div class="medium-8 large-5 columns">
+                  <form action="{{ path('siso_redeem_voucher') }}" method="post">
+                    <div class="row collapse">
+                      <div class="small-7 medium-8 columns">
+                        <input type="text" id="voucher-number" name="ses_voucher_number"
+                               placeholder="{{ 'label.voucher_number'|st_translate }}">
+                      </div>
+                      <div class="small-5 medium-4 columns">
+                        <button type="submit" class="button postfix"
+                                title="{{ 'button.activate_voucher'|st_translate }}">
+                          <i class="fa fa-ticket"></i> {{ 'button.activate_voucher'|st_translate }}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                  {# display vouchers if set in the basket #}
+                  {% if ses_contains_basket_vouchers(basket) %}
+                    {% set vouchers = ses_get_basket_vouchers(basket) %}
+                    <div class="u-text-small">{{ 'common.voucher_redeemed'|st_translate }}:</div>
+                    {% for voucher in vouchers %}
+                      <div>
+                        {{ voucher }} -
+                        <a href="{{ path('siso_remove_voucher', {'voucherNumber' : voucher}) }}">
+                          <i class="fa fa-trash"></i> {{ 'button.remove_voucher'|st_translate }}
+                        </a>
+                      </div>
+                    {% endfor %}
+
+                    <a class="button tiny secondary" href="{{ path('siso_remove_voucher') }}">
+                      <i class="fa fa-trash"></i> {{ 'button.remove_vouchers'|st_translate }}
+                    </a>
+
+                  {% endif %}
+
+                </div>
+                <div class="columns">
+                  <hr class="show-for-medium-down"/>
+                </div>
+              {% endif %}
+              {# voucher end #}
+            {% endblock %}
+            <div class="{% if not voucher_active %}large-push-7 {% endif %}large-5 columns">
+              {{ block('basket_part_footer') }}
+            </div>
+          </div>
+
+
+          <a href="{{ '/'|st_siteaccess_path }}" class="button u-full-width-on-small u-margin-bottom-1x-on-small">
+            <i class="fa fa-chevron-left"></i> {{ 'Back'|st_translate }}
+          </a>
+
+          <a href="{{ path('siso_checkout_homepage') }}" class="button success right u-full-width-on-small js-submit-basket"
+             data-tag-checkout-button>
+            <i class="fa fa-check"></i> {{ 'Checkout'|st_translate }}
+          </a>
+        {% endblock %}
+
+
+        {% block bottom_html %}
+          {% if bottomHtml|default is not empty and bottomHtml is iterable %}
+            {% for html in bottomHtml %}
+              <div>
+                {{ html|raw }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endblock %}
+
+        {{ include('SilversolutionsEshopBundle:parts:stock_legend.html.twig'|st_resolve_template) }}
+
+      {% else %}
+        <div class="row u-margin-top-1x">
+          <div class="medium-12 columns">
+            {{ include('SilversolutionsEshopBundle:parts:message.html.twig'|st_resolve_template, {
+              'content': 'Your Basket is empty'|st_translate ~ '!',
+              'attrs':  {
+                'class': 'alert',
+                'behat': st_tag('message', 'error', 'exists', '', '')
+              } }) }}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block tracker_bottom %}
+  {{ tracker.bottom(tracking_codes) }}
+{% endblock %}

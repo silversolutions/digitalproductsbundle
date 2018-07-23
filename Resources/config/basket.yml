@@ -1,0 +1,133 @@
+parameters:
+    # The amount of hours after how which a anonymous basket can be deleted.
+    #
+    # Used by the command line tool.
+    #
+    # valid values: <integer>, in Hours
+    ses_basket.default.validHours: 120
+
+    # Determines if stock is visible in a column or inside product column
+    # Basket view
+    # valid values: true or false
+    ses_basket.default.stock_in_column: true
+
+    # Description characters limit in basket column
+    # Basket view
+    # valid values: <integer>
+    ses_basket.default.description_limit: 50
+
+    # Determines if stock is visible in a column or inside product column
+    # Stored Basket view
+    # valid values: true or false
+    ses_stored_basket.default.stock_in_column: true
+
+    # Description characters limit in basket column
+    # Stored Basket view
+    # valid values: <integer>
+    ses_stored_basket.default.description_limit: 50
+
+    # Description characters limit in basket column
+    # Wishlist view
+    # valid values: <integer>
+    ses_wishlist.default.description_limit: 50
+
+    # The amount of minutes after a basket should recalculate its prices and refresh the catalog elements
+    # directly after a basket is loaded.
+    #
+    # Used in BasketService.getBasketBySessionId and .getBasketByUserId
+    #
+    # Valid values: <integer> hours or <integer> minutes and so on
+    ses_basket.default.recalculatePricesAfter: 3 hours
+    ses_basket.default.refreshCatalogElementAfter: 1 hours
+
+    silver_basket.basketline_quantity_max: 1000000
+    silver_basket.basketline_quantity_min: 1
+
+    #here you can enable/disable the DiscontinuedProductsListener
+    #values: true or false
+    siso_basket.default.discontinued_products_listener_active: true
+
+    #here you can enable/disable if the DiscontinuedProductsListener should consider the packaging unit
+    #values: true or false
+    siso_basket.default.discontinued_products_listener_consider_packaging_unit: true
+
+    # Defines catalog element attributes that should be stored in a basket line.
+    siso_basket.default.stored_catalog_element_attributes:
+        Silversolutions\Bundle\EshopBundle\Product\OrderableProductNode:
+            baseAttributes:
+                - customerPrice
+                - ean
+                - identifier
+                - image
+                - imageList
+                - isOrderable
+                - longDescription
+                - manufacturerSku
+                - maxOrderQuantity
+                - minOrderQuantity
+                - allowedQuantity
+                - name
+                - packagingUnit
+                - parentElementIdentifier
+                - path
+                - price
+                - scaledPrices
+                - shortDescription
+                - sku
+                - specifications
+                - stock
+                - text
+                - type
+                - unit
+                - url
+                - vatCode
+                - displayInSearch
+                - displayInProductList
+                - section
+
+            dataMapAttributes: [discontinued,isDownload,downloadFile]
+
+        Silversolutions\Bundle\EshopBundle\Product\OrderableVariantNode:
+            baseAttributes:
+                - customerPrice
+                - ean
+                - identifier
+                - image
+                - imageList
+                - isOrderable
+                - longDescription
+                - manufacturerSku
+                - maxOrderQuantity
+                - minOrderQuantity
+                - allowedQuantity
+                - name
+                - packagingUnit
+                - parentElementIdentifier
+                - path
+                - price
+                - scaledPrices
+                - shortDescription
+                - sku
+                - specifications
+                - stock
+                - text
+                - type
+                - unit
+                - url
+                - vatCode
+                - variantCode
+                - variantCharacteristics
+                - displayInSearch
+                - displayInProductList
+                - section
+                - isDownload
+                - downloadFile
+            dataMapAttributes: [discontinued]
+
+    #enable/disable additional text line in basket per basket line
+    ses_basket.default.additional_text_for_basket_line: false
+
+    # Input characters limit in basket column
+    # Basket view
+    # valid values: <integer>
+    ses_basket.default.additional_text_for_basket_line_input_limit: 30

@@ -1,0 +1,15 @@
+{% use "SilversolutionsEshopBundle:Emails:blocks.html.twig" %}
+
+{{ block('email_tpl_header') }}
+
+<h1>Your downloads</h1>
+
+{% if downloadUrls|default is not empty %}
+
+     {% for download in downloadUrls %}
+         <a href="{{ absolute_url("/var/" ~ download.path) }}" >Download {{ download.fileName }}</a><br/>
+     {% endfor %}
+{% endif %}
+
+<br/>
+{{ block('email_footer') }}

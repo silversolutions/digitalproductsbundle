@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="ezcommerce_demo.confirmation_listener.class">Siso\DigitProductsBundle\EventListener\DownloadOrderListener</parameter>
+    </parameters>
+    <services>
+        <service id="ezcommerce_demo.confirmation_listener" class="%ezcommerce_demo.confirmation_listener.class%">
+            <argument type="service" id="silver_basket.basket_repository" />
+            <argument type="service" id="silver_trans.translator" />
+            <argument type="service" id="siso_tools.mailer_helper" />
+            <argument type="service" id="silver_catalog.data_provider_service" />
+            <argument type="collection">
+                <argument key="addresses">$siso_core.default.ses_swiftmailer$</argument>
+                <argument key="subject">$order_confirmation.subject;siso_checkout$</argument>
+            </argument>
+
+            <tag name="kernel.event_listener" event="silver_eshop.response_message" method="onOrderResponse" priority="-10" />
+            <tag name="kernel.event_listener"  event="silver_eshop.exception_message" method="onExceptionMessage" />
+
+        </service>
+    </services>
+</container>

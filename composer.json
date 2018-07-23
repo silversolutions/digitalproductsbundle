@@ -1,0 +1,21 @@
+{
+  "name": "silversolutions/digitalproducts",
+  "description": "Tutorial for digital products",
+  "type": "feature",
+  "keywords": [ "tutorial digital products" ],
+  "license": "",
+  "authors": [
+    {
+      "name": "silver.solutions GmbH",
+      "homepage": "http://www.silversolutions.de/"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Siso\\DigitalProductsDigitalProducts\\": "./"
+    }
+  },
+  "require": {
+    "php": ">=5.4.4"
+  }
+}

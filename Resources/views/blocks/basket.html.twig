@@ -1,0 +1,534 @@
+{#
+    Reuasble parts of basket blocks
+
+    LIST OF BLOCKS:
+    - basket_header
+    - basket_lines
+    - basket_footer
+    - delivery_costs renders delivery costs
+
+    is_full_view - flag for showing full basket line e.g: inside basket show, but inside checkout hide
+#}
+
+{% block basket_payment %}
+    {% if basket.paymentMethod|default is not empty %}
+        {% if noGrid|default is not empty and noGrid %}
+            <div data-price-wrap="user">
+                {{ 'Payment'|st_translate }}: <strong>{{ basket.paymentMethod|st_translate }}</strong>
+            </div>
+        {% else %}
+            <div class="row collapse" data-price-wrap="user">
+                <div class="small-7 columns{% if (isFlyout is not defined) or (isFlyout|default is not empty and not isFlyout) %} text-right{% endif %}">
+                    {{ 'Payment'|st_translate }}:
+                </div>
+                <div class="small-5 columns text-right">
+                    <strong>{{ basket.paymentMethod|st_translate }}</strong>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block basket_delivery %}
+
+    {% if ses.profile.sesUser.isPriceInclVat is same as(false) %}
+        {% set showInclVat = false %}
+    {% else %}
+        {% set showInclVat = true %}
+    {% endif %}
+
+    {% set priceProperty = 'priceExclVat' %}
+    {% if showInclVat %}
+        {% set priceProperty = 'priceInclVat' %}
+    {% endif %}
+
+    {#display shipping costs#}
+    {% set shippingCosts = basket|shipping %}
+    {% if shippingCosts|default is not empty %}
+        {% for shippingCost in shippingCosts %}
+            {% if noGrid %}
+                <div data-price-wrap="user">
+                    {{ 'Delivery'|st_translate }} ({{ shippingCost.name }}):
+                    <strong>
+                        {{ ses_render_price(null, shippingCost.price,
+                        {
+                            'outputPrice': {'property': priceProperty, 'raw' : true}
+                        }) }}
+                    </strong>
+                </div>
+            {% else %}
+                <div class="row collapse" data-price-wrap="user">
+                    <div class="small-7 columns text-right">
+                        {{ 'Delivery'|st_translate }} ({{ shippingCost.name }}):
+                    </div>
+                    <div class="small-5 columns text-right">
+                        <strong>
+
+                            {{ ses_render_price(null, shippingCost.price,
+                            {
+                                'outputPrice': {'property': priceProperty, 'raw' : true}
+                            }) }}
+
+                        </strong>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}
+
+{% block basket_add_costs %}
+
+    {% if ses.profile.sesUser.isPriceInclVat is same as(false) %}
+        {% set showInclVat = false %}
+    {% else %}
+        {% set showInclVat = true %}
+    {% endif %}
+
+    {% set priceProperty = 'priceExclVat' %}
+    {% if showInclVat %}
+        {% set priceProperty = 'priceInclVat' %}
+    {% endif %}
+
+
+    {#display shipping costs#}
+    {% set shippingCosts = basket|shipping %}
+    {% if shippingCosts|default is not empty %}
+        {% for shippingCost in shippingCosts %}
+            <div class="row collapse" data-price-wrap="user">
+                <div class="small-7 columns{% if (isFlyout is not defined) or (isFlyout|default is not empty and not isFlyout) %} text-right{% endif %}">
+                    {{ 'Delivery'|st_translate }} ({{ shippingCost.name }}):
+                </div>
+                <div class="small-5 columns text-right">
+                    <strong>
+                        {{ ses_render_price(null, shippingCost.price,
+                        {
+                            'outputPrice': {'property': priceProperty, 'raw' : true}
+                        }) }}
+                    </strong>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {#display add costs#}
+    {% set addCosts = basket|basket_add_costs %}
+    {% if addCosts|default is not empty %}
+        {% for addCost in addCosts %}
+            <div class="row collapse" data-price-wrap="user">
+                <div class="small-7 columns{% if (isFlyout is not defined) or (isFlyout|default is not empty and not isFlyout) %} text-right{% endif %}">
+                    {{ 'AddCost'|st_translate }} ({{ addCost.name }}):
+                </div>
+                <div class="small-5 columns text-right">
+                    <strong>
+                        {{ ses_render_price(null, addCost.price,
+                        {
+                            'outputPrice': {'property': priceProperty, 'raw' : true}
+                        }) }}
+                    </strong>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {#display discounts#}
+    {% set discounts = basket|basket_discounts %}
+    {% if discounts|default is not empty %}
+        {% for discount in discounts %}
+            <div class="row collapse" data-price-wrap="user">
+                <div class="small-7 columns{% if isFlyout|default is not empty and not isFlyout or isFlyout is not defined %} text-right{% endif %}">
+                    {{ 'Discount'|st_translate }} ({{ discount.name }}):
+                </div>
+                <div class="small-5 columns text-right">
+                    <strong>
+                        {{ ses_render_price(null, discount.price,
+                        {
+                            'outputPrice': {'property': priceProperty, 'raw' : true}
+                        }) }}
+                    </strong>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}
+
+{% block basket_part_header %}
+    {% if ses.profile.sesUser.isPriceInclVat is same as(false) %}
+        {% set showInclVat = false %}
+    {% else %}
+        {% set showInclVat = true %}
+    {% endif %}
+
+    {% set vat = 'Excl.'|st_translate %}
+    {% set vatValues = 'plus'|st_translate %}
+
+    {% if showInclVat %}
+        {% set vat = 'Inc.'|st_translate %}
+        {% set vatValues = 'thereof'|st_translate %}
+    {% endif %}
+
+    {% if is_full_view is not defined %}
+        {% set is_full_view = false %}
+    {% endif %}
+
+    {% set stockColumn = ses_config_parameter('stock_in_column', 'ses_basket') %}
+    {% set stockColumnSize = 1 %}
+    {% set productColumn = is_full_view ? 5 : 6 %}
+    {% if stockColumn %}
+        {% set productColumn = productColumn - stockColumnSize %}
+    {% endif %}
+
+    <div class="large-{{ productColumn }} columns">
+        <strong>{{ 'Product'|st_translate }}</strong>
+    </div>
+    {% if stockColumn %}
+        <div class="large-{{ stockColumnSize }} columns text-center">
+            <strong>{{ 'Stock'|st_translate }}</strong>
+        </div>
+    {% endif %}
+    <div class="large-2 columns text-center">
+        <strong>{{ 'Quantity'|st_translate }}</strong>
+    </div>
+    <div class="large-2 columns text-center">
+        <strong>{{ 'Unit price'|st_translate }} {{ '%vat% VAT'|st_translate(null, {'%vat%': vat}) }}</strong>
+    </div>
+    <div class="large-2 columns text-center">
+        <strong>{{ 'Total price'|st_translate }}</strong>
+    </div>
+    {% if is_full_view %}
+        <div class="large-1 columns text-center"><i class="fa fa-trash fa-lg"></i></div>
+    {% endif %}
+{% endblock %}
+
+{% block basket_part_lines %}
+    {% if ses.profile.sesUser.isPriceInclVat is same as(false) %}
+        {% set showInclVat = false %}
+    {% else %}
+        {% set showInclVat = true %}
+    {% endif %}
+
+    {% set vat = 'Excl.'|st_translate %}
+    {% set vatValues = 'plus'|st_translate %}
+
+    {% if showInclVat %}
+        {% set vat = 'Inc.'|st_translate %}
+        {% set vatValues = 'thereof'|st_translate %}
+    {% endif %}
+
+    {% if is_full_view is not defined %}
+        {% set is_full_view = false %}
+    {% endif %}
+
+    {% set limit = ses_config_parameter('description_limit', 'ses_basket') %}
+    {% set stockColumn = ses_config_parameter('stock_in_column', 'ses_basket') %}
+    {% set stockColumnSize = 1 %}
+    {% set productColumn = is_full_view ? 5 : 6 %}
+    {% if stockColumn %}
+        {% set productColumn = productColumn - stockColumnSize %}
+    {% endif %}
+
+    {% for line in basket.lines %}
+        {% if line.catalogElement|default is not empty %}
+            {% set product = line.catalogElement %}
+        {% else %}
+            {% set product = ses_product({'sku': line.sku, 'variantCode': line.variantCode }) %}
+        {% endif %}
+
+        {% if product|default is not empty %}
+            {% set stockField %}
+                {% set field = line.remoteDataMap.stock is defined ? line.remoteDataMap.stock : null %}
+
+                {{ ses_render_stock(field, {
+                    'outputStock': {
+                        'numeric': false,
+                        'cssClass': 'icons'
+                    },
+                    'quantity' : line.quantity
+                }) }}
+            {% endset %}
+            <div id="product_{{ line.basketLineId }}" class="js-product-wrapper c-basket__item">
+                <div class="row">
+                    <div class="large-{{ productColumn }} columns">
+                        <div class="row">
+                            <div class="small-4 large-4 columns small-text-left">
+                                <a href="{{ product.seoUrl }}" data-tooltip aria-haspopup="true" data-options="disable_for_touch:true" title="{{ 'Click to view product details'|st_translate }}">
+                                    {% set productId = product.sku ~ line.variantCode %}
+                                    {% set mainImage = ses_assets_main_image(product, productId) %}
+                                    {# if no image was found for the choosen variant, use main image from the Variant product node #}
+                                    {% if mainImage is empty and line.variantCode is defined %}
+                                        {% set variantProduct = ses_variant_product_by_sku(line.sku) %}
+                                        {% if variantProduct|default is not empty %}
+                                            {% set mainImage = ses_assets_main_image(variantProduct) %}
+                                        {% endif %}
+                                    {% endif %}
+                                    <img src="/{{ st_imageconverter(mainImage, 'thumb_small') }}"
+                                         alt="{% if mainImage.alternativeText is defined and mainImage.alternativeText is not empty %}{{ mainImage.alternativeText }}{% else %}{{ 'label.image_not_available'|st_translate }}{% endif %}"
+                                         title="{% if mainImage.alternativeText is defined and mainImage.alternativeText is not empty %}{{ mainImage.alternativeText }}{% else %}{{ 'label.image_not_available'|st_translate }}{% endif %}"
+                                    />
+                                </a>
+                            </div>
+                            <div class="small-8 large-8 columns">
+                                <h3 class="c-card__title u-no-padding u-padding-right-1x">
+                                    <a href="{{ product.seoUrl }}" title="{{ product.name }}">{{ product.name }}</a>
+                                </h3>
+                                <div>{{ 'SKU'|st_translate }}: {{ line.sku }}</div>
+                                {% set description = product.text|trim %}
+                                {% if description is not empty  %}
+                                    <div>
+                                        {{ description|truncate(limit)|raw }}
+                                    </div>
+                                {% endif %}
+
+                                {% if line.variantCode|default is not empty %}
+                                    <div>
+                                        <em>{{ 'Variant'|st_translate }}</em>: <strong>{{ line.variantCode }}</strong>
+                                    </div>
+                                {% endif %}
+                                {% if is_full_view %}
+                                    {% if not stockColumn %}
+                                        <span class="stock">
+                                            {{ stockField }}
+                                        </span>
+                                    {% endif %}
+
+                                    {% if line.variantCode|default is not empty %}
+                                        <a class="js-edit-variant" href="#" data-tooltip aria-haspopup="true" data-options="disable_for_touch:true" title="{{ 'Change product selection'|st_translate }}"
+                                           data-variant-code="{{ line.variantCode }}" data-variant-sku="{{ line.sku }}">
+                                            <i class="fa fa-pencil"></i>
+                                        </a>
+                                    {% endif %}
+
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if stockColumn %}
+                        <div class="large-{{ stockColumnSize }} columns text-center text-center stock">
+                            <div class="row u-margin-top-1x-on-small u-margin-top-1x-on-medium">
+                                <div class="small-6 columns hide-for-large-up text-left">
+                                    <label class="u-no-margin"><strong>{{ 'Stock'|st_translate }}: </strong></label>
+                                </div>
+                                <div class="small-6 large-12 columns small-text-right large-text-center c-basket__stock">
+                                    {% if product.dataMap.isDownload|default(false) == true %}
+                                            <i class="fa fa-2x fa-arrow-circle-o-down" aria-hidden="true"></i>
+                                    {% else %}
+                                        {{ stockField }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% set appendix_for_variant = line.variantCode is not empty ? '-' ~ line.variantCode : '' %}
+                    <div class="large-2 columns text-right">
+                        <div class="row">
+                            <div class="small-6 columns text-left hide-for-large-up">
+                                <label class="inline u-no-margin u-no-padding" for="quantity-{{ loop.index }}">
+                                    <strong>{{ 'Quantity'|st_translate }}:</strong>
+                                </label>
+                            </div>
+                            {% if is_full_view %}
+                                <div class="small-6 large-12 columns">
+                                    <input class="js-quantity-field center_align amount text-right" id="quantity-{{ loop.index }}" name="ses_basket[{{ loop.index }}][quantity]" type="text"
+                                           value="{{ line.quantity }}" size="1"
+                                           data-old-quantity="{{ line.quantity }}"
+                                           data-tooltip aria-haspopup="true" data-options="disable_for_touch:true" title="{{ 'Quantity of products you want to purchase'|st_translate }}" {{ st_tag('product', 'basket', 'quantity', line.sku ~ appendix_for_variant,  line.quantity) }}>
+                                </div>
+                                <input type="hidden" name="ses_basket[{{ loop.index }}][sku]" value="{{ line.sku }}"/>
+                                <input type="hidden" name="ses_basket[{{ loop.index }}][id]" value="{{ line.basketLineId }}"/>
+                                {% if line.variantCode|default is not empty %}
+                                    <input type="hidden" name="ses_basket[{{ loop.index }}][isVariant]" value="isVariant"/>
+                                    <input type="hidden" name="ses_basket[{{ loop.index }}][currentVariantCode]"
+                                           value="{{ line.variantCode }}"/>
+                                    <input type="hidden" name="ses_basket[{{ loop.index }}][ses_variant_code]"
+                                           value="{{ line.variantCode }}"/>
+                                {% endif %}
+                            {% else %}
+
+                                <div class="small-text-left large-text-center small-6 large-12 columns">
+                                    <input class="text-right" type="text" disabled="" placeholder="{{ line.quantity }}">
+                                </div>
+
+                            {% endif %}
+                        </div>
+                    </div>
+
+
+
+
+                    <div class="large-2 columns text-right">
+                        <div class="row">
+                            <div class="small-6 columns hide-for-large-up text-left">
+                                <label class="u-no-margin">
+                                    <strong>
+                                        {{ 'Unit price'|st_translate }} {{ '%vat% VAT'|st_translate(null, {'%vat%': vat}) }}:
+                                    </strong>
+                                </label>
+                            </div>
+                            <div class="small-6 large-12 columns"{% if is_full_view %} data-price-wrap="user"{% endif %}>
+
+                                <input class="text-right" type="text" disabled="" {{ st_tag('product', 'basket', 'price', line.sku ~ appendix_for_variant) }} placeholder="{% if line.remoteDataMap.isPriceValid is defined and line.remoteDataMap.isPriceValid %}{% if showInclVat %}{{ line.priceGross|price_format(line.currency) }}{% else %}{{ line.priceNet|price_format(line.currency) }}{% endif %}{% else %}–{% endif %}">
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="large-2 columns text-right">
+                        <div class="row">
+                            <div class="small-6 columns text-left hide-for-large-up">
+                                <label class="u-no-margin">
+                                    <strong>{{ 'Total price'|st_translate }}:</strong>
+                                </label>
+                            </div>
+                            <div class="small-6 large-12 columns"{% if is_full_view %} data-price-wrap="user"{% endif %}>
+
+                                <input class="text-right" type="text" disabled="" {{ st_tag('product', 'basket', 'total-price', line.sku ~ appendix_for_variant) }} placeholder="{% if line.remoteDataMap.isPriceValid is defined and line.remoteDataMap.isPriceValid %}{% if showInclVat %}{{ line.linePriceAmountGross|price_format(line.currency) }}{% else %}{{ line.linePriceAmountNet|price_format(line.currency) }}{% endif %}{% else %}–{% endif %}">
+
+                            </div>
+                        </div>
+                    </div>
+                    {% if is_full_view %}
+                        <div class="small-1 columns c-basket__delete large-text-center">
+                            <a href="{{ path('silversolutions_basket_delete', {'id': line.basketLineId}) }}"
+                               data-tooltip aria-haspopup="true" data-options="disable_for_touch:true" title="{{ 'Remove product from basket'|st_translate }}" {{ st_tag('product', 'basket', 'remove', '',  line.sku) }}>
+                                <i class="fa fa-lg fa-trash fa-lg"></i>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                {# Additional text line in the basket stored it in the remoteDataMap #}
+                {% if ses_config_parameter('additional_text_for_basket_line', 'ses_basket') %}
+                    <div class="row">
+                        {% set inputLimit = ses_config_parameter('additional_text_for_basket_line_input_limit', 'ses_basket') %}
+                        {% set customTextValue = '' %}
+                        {% set displayLabel = false %}
+                        {% if line.remoteDataMap.customText|default is not empty %}
+                            {% set customTextValue = line.remoteDataMap.customText %}
+                            {% set displayLabel = true %}
+                        {% elseif is_full_view %}
+                            {% set displayLabel = true %}
+                        {% endif %}
+                        {% if displayLabel %}
+                            <div class="large-2 columns">
+                                <label for="customText-{{ loop.index }}" class="inline u-no-margin-bottom"><strong>{{ 'common.more_information'|st_translate }}</strong></label>
+                            </div>
+                        {% endif %}
+                        <div class="large-4 columns end">
+                            {% if is_full_view %}
+                                <input class="u-no-margin-bottom" type="text" id="customText-{{ loop.index }}"
+                                       name="ses_basket[{{ loop.index }}][customText]" maxlength="{{ inputLimit }}"
+                                       value="{{ customTextValue }}"/>
+                            {% else %}
+                                {# the text can not be changed if not the full view (e.g. summary) #}
+                                <div class="c-card__description u-no-padding-left u-no-padding-right">
+                                    {{ customTextValue }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            {# product not available #}
+            <div id="product_{{ loop.identifier }}" class="js-product-wrapper c-card u-padding-1x">
+                <div class="row">
+                    <div class="large-11 columns">
+                        <p class="u-no-margin">{{ 'This product is not available any more! You can delete it here'|st_translate }}</p>
+                    </div>
+                    <div class="large-1 columns large-text-center u-margin-top-1x-on-small">
+                        <a href="{{ path('silversolutions_basket_delete', {'id': line.basketLineId}) }}"
+                           data-tooltip aria-haspopup="true" data-options="disable_for_touch:true" title="{{ 'Remove product from basket'|st_translate }}">
+                            <i class="fa fa-lg fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+    {% if is_full_view %}
+        <button type="submit" class="button js-update-basket small u-margin-top-1x u-full-width-on-small u-margin-bottom-1x"
+                data-tag-button-update
+                title="{{ 'Please update your basket'|st_translate }}"><i
+                    class="fa fa-refresh"></i> {{ 'Update basket'|st_translate }}</button>
+    {% endif %}
+{% endblock %}
+
+{% block basket_part_footer %}
+    {% if ses.profile.sesUser.isPriceInclVat is same as(false) %}
+        {% set showInclVat = false %}
+    {% else %}
+        {% set showInclVat = true %}
+    {% endif %}
+
+    {% set vat = 'Excl.'|st_translate %}
+    {% set vatValues = 'plus'|st_translate %}
+
+    {% if showInclVat %}
+        {% set vat = 'Inc.'|st_translate %}
+        {% set vatValues = 'thereof'|st_translate %}
+    {% endif %}
+
+
+    {% if basket.paymentMethod|default is not empty %}
+        {{ block('basket_payment') }}
+    {% endif %}
+
+    <div class="row collapse" data-price-wrap="user">
+        <div class="small-7 columns text-right">
+            {{ 'Subtotal %vat% VAT'|st_translate(null, {'%vat%': vat}) }}:
+        </div>
+        <div class="small-5 columns text-right">
+            <strong>
+                {% if showInclVat %}
+                    {{ basket.totals.lines.totalGross|price_format(basket.totalsSum.currency) }}
+                {% else %}
+                    {{ basket.totals.lines.totalNet|price_format(basket.totalsSum.currency) }}
+                {% endif %}
+            </strong>
+        </div>
+    </div>
+
+    {{ block('basket_add_costs') }}
+
+    {# totals #}
+    <div class="row collapse" data-price-wrap="user">
+        <div class="small-7 columns text-right">{{ 'Totals %vat% VAT'|st_translate(null, {'%vat%': vat}) }}:
+        </div>
+        <div class="small-5 columns text-right">
+            <strong>
+                {% if showInclVat %}
+                    {{ basket.totalsSum.totalGross|price_format(basket.totalsSum.currency) }}
+                {% else %}
+                    {{ basket.totalsSum.totalNet|price_format(basket.totalsSum.currency) }}
+                {% endif %}
+            </strong>
+        </div>
+    </div>
+
+    {% for vatPercent, vatValue in basket.totalsSum.vatList %}
+        {% if vatPercent != 0 %}
+            <div class="row collapse" data-price-wrap="user">
+                <div class="small-7 columns text-right">
+                    {{ '%vat% VAT'|st_translate(null, {'%vat%':vatValues}) }} ({{ vatPercent }}%):
+                </div>
+
+                <div class="small-5 columns text-right">
+                    <strong>{{ vatValue|price_format(basket.totalsSum.currency) }}</strong>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <div class="row u-text-big collapse" data-price-wrap="user">
+        <div class="small-7 columns text-right">
+            {{ 'Total'|st_translate }}:
+        </div>
+
+        <div class="small-5 columns text-right">
+            <strong>{{ basket.totalsSum.totalGross|price_format(basket.totalsSum.currency) }}</strong>
+        </div>
+    </div>
+    <hr>
+{% endblock %}

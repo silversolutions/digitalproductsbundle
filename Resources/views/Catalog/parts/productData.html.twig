@@ -1,0 +1,47 @@
+{% if catalogElement.sku is defined %}
+    <p class="u-no-margin">
+        <strong>{{ 'SKU: %sku%'|st_translate(null, {'%sku%': catalogElement.sku}) }}</strong>
+    </p>
+{% endif %}
+
+{% if catalogElement.ean is defined and catalogElement.ean is not empty %}
+    <p class="u-no-margin">
+        <strong>{{ 'EAN: %ean%'|st_translate(null, {'%ean%': catalogElement.ean}) }}</strong>
+    </p>
+{% endif %}
+
+{% if catalogElement.dataMap.isDownload is defined and catalogElement.dataMap.isDownload == true %}
+    <p class="u-no-margin">
+        <i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i>
+        <strong>
+            This is a digital product
+        </strong>
+    </p>
+{% endif %}
+
+{% if catalogElement.unit is defined and catalogElement.unit is not empty %}
+    <p class="u-no-margin">
+        <strong>{{ 'Unit: %unit%'|st_translate(null, {'%unit%': catalogElement.unit}) }}</strong>
+    </p>
+{% endif %}
+
+{% if catalogElement.packagingUnit is defined and catalogElement.packagingUnit is not empty and catalogElement.packagingUnit > 0 %}
+   <p class="u-no-margin">
+        <strong>{{ 'Packaging Unit: %packageUnit%'|st_translate(null, {'%packageUnit%': catalogElement.packagingUnit}) }}</strong>
+    </p>
+{% endif %}
+
+{# display attributes of an orderable variant #}
+{% if orderableVariantProduct|default is not empty and ses_render_field(orderableVariantProduct, 'countryOfOrigin') %}
+    <p class="u-no-margin">
+        <strong>{{ 'Country of Origin'|st_translate }}:</strong> {{ ses_render_field(orderableVariantProduct, 'countryOfOrigin') }}
+    </p>
+{% endif %}
+
+{% if catalogElement.text is not empty %}
+    <p class="u-margin-top-1x">{{ catalogElement.text|nl2br }}</p>
+{% endif %}
+
+{% if ses_render_field(catalogElement, 'shortDescription') %}
+    <p>{{ ses_render_field(catalogElement, 'shortDescription') }}</p>
+{% endif %}
