@@ -212,8 +212,8 @@ class DownloadOrderListener {
             $sender,
             $recipient,
             $subject,
-            'DigitProductsBundle:Emails:downloads.txt.twig',
-            'DigitProductsBundle:Emails:downloads.html.twig',
+            'DigitalProductsBundle:Emails:downloads.txt.twig',
+            'DigitalProductsBundle:Emails:downloads.html.twig',
             array(
                 'basket' => $basket,
                 'downloadUrls' => $downloadUrls,

@@ -1,6 +1,6 @@
 {% extends "SilversolutionsEshopBundle::pagelayout.html.twig"|st_resolve_template %}
 
-{% use "@DigitProductsBundle/Resources/views/blocks/basket.html.twig" %}
+{% use "@DigitalProductsBundle/Resources/views/blocks/basket.html.twig" %}
 
 {% import "SilversolutionsEshopBundle:Components:tracker_macros.html.twig"|st_resolve_template as tracker %}
 {% set tracking_codes = ses_track_basket(basket, 'view') %}

@@ -312,6 +312,7 @@
                                     <label class="u-no-margin"><strong>{{ 'Stock'|st_translate }}: </strong></label>
                                 </div>
                                 <div class="small-6 large-12 columns small-text-right large-text-center c-basket__stock">
+
                                     {% if product.dataMap.isDownload|default(false) == true %}
                                             <i class="fa fa-2x fa-arrow-circle-o-down" aria-hidden="true"></i>
                                     {% else %}

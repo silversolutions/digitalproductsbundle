@@ -4,7 +4,7 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="ezcommerce_demo.confirmation_listener.class">Siso\DigitProductsBundle\EventListener\DownloadOrderListener</parameter>
+        <parameter key="ezcommerce_demo.confirmation_listener.class">Siso\DigitalProducts\EventListener\DownloadOrderListener</parameter>
     </parameters>
     <services>
         <service id="ezcommerce_demo.confirmation_listener" class="%ezcommerce_demo.confirmation_listener.class%">
